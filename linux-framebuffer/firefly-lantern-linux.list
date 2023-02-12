@@ -1,0 +1,236 @@
+
+firefly-lantern-linux:     file format elf32-littleriscv
+
+
+Disassembly of section mecrisp:
+
+00010000 <_start>:
+   10000:	f9c00513          	li	x10,-100
+   10004:	00000597          	auipc	x11,0x0
+   10008:	25e58593          	addi	x11,x11,606 # 10262 <device>
+   1000c:	4609                	li	x12,2
+   1000e:	03800893          	li	x17,56
+   10012:	00000073          	ecall
+
+00010016 <framebuffer_mmap>:
+   10016:	872a                	mv	x14,x10
+   10018:	4501                	li	x10,0
+   1001a:	007e95b7          	lui	x11,0x7e9
+   1001e:	460d                	li	x12,3
+   10020:	4685                	li	x13,1
+   10022:	4781                	li	x15,0
+   10024:	0de00893          	li	x17,222
+   10028:	00000073          	ecall
+   1002c:	81aa                	mv	x3,x10
+   1002e:	a8c5                	j	1011e <oscillator_initialisation>
+	...
+
+00010100 <Reset>:
+   10100:	40021737          	lui	x14,0x40021
+   10104:	400071b7          	lui	x3,0x40007
+   10108:	57fd                	li	x15,-1
+   1010a:	cf1c                	sw	x15,24(x14)
+   1010c:	cf5c                	sw	x15,28(x14)
+   1010e:	40011637          	lui	x12,0x40011
+   10112:	80062023          	sw	x0,-2048(x12) # 40010800 <GPIOA_BASE>
+   10116:	67c1                	lui	x15,0x10
+   10118:	0785                	addi	x15,x15,1
+   1011a:	40f1a023          	sw	x15,1024(x3) # 40007400 <DAC_BASE+0x400>
+
+0001011e <oscillator_initialisation>:
+   1011e:	4c01                	li	x24,0
+   10120:	5cc1                	li	x25,-16
+   10122:	5d7d                	li	x26,-1
+   10124:	4601                	li	x12,0
+
+00010126 <animation_loop>:
+   10126:	2219                	jal	1022c <clrscr>
+   10128:	20000137          	lui	x2,0x20000
+
+0001012c <oscillator>:
+   1012c:	405cd693          	srai	x13,x25,0x5
+   10130:	03ac8733          	mul	x14,x25,x26
+   10134:	8729                	srai	x14,x14,0xa
+   10136:	41870733          	sub	x14,x14,x24
+   1013a:	8715                	srai	x14,x14,0x5
+   1013c:	039c87b3          	mul	x15,x25,x25
+   10140:	87a9                	srai	x15,x15,0xa
+   10142:	c0078793          	addi	x15,x15,-1024 # fc00 <DACC_R12DH+0xf7e0>
+   10146:	8795                	srai	x15,x15,0x5
+   10148:	9c36                	add	x24,x24,x13
+   1014a:	9cba                	add	x25,x25,x14
+   1014c:	40fd0d33          	sub	x26,x26,x15
+
+00010150 <particleloop>:
+   10150:	4502                	lw	x10,0(x2)
+   10152:	4592                	lw	x11,4(x2)
+   10154:	01611793          	slli	x15,x2,0x16
+   10158:	87e5                	srai	x15,x15,0x19
+   1015a:	0785                	addi	x15,x15,1
+   1015c:	e3b9                	bnez	x15,101a2 <tailparticle>
+
+0001015e <headparticle>:
+   1015e:	01a61793          	slli	x15,x12,0x1a
+   10162:	eb89                	bnez	x15,10174 <leadingfilament>
+
+00010164 <newdestination>:
+   10164:	01cc1b13          	slli	x22,x24,0x1c
+   10168:	01cc9b93          	slli	x23,x25,0x1c
+   1016c:	415b5b13          	srai	x22,x22,0x15
+   10170:	415bdb93          	srai	x23,x23,0x15
+
+00010174 <leadingfilament>:
+   10174:	86da                	mv	x13,x22
+   10176:	875e                	mv	x14,x23
+   10178:	402cd793          	srai	x15,x25,0x2
+   1017c:	8e9d                	sub	x13,x13,x15
+   1017e:	402c5793          	srai	x15,x24,0x2
+   10182:	8f1d                	sub	x14,x14,x15
+   10184:	00411793          	slli	x15,x2,0x4
+   10188:	83b9                	srli	x15,x15,0xe
+   1018a:	c789                	beqz	x15,10194 <allfilaments>
+
+0001018c <followingfilament>:
+   1018c:	c0012683          	lw	x13,-1024(x2) # 1ffffc00 <device+0x1ffef99e>
+   10190:	c0412703          	lw	x14,-1020(x2)
+
+00010194 <allfilaments>:
+   10194:	5389                	li	x7,-30
+   10196:	2825                	jal	101ce <move>
+   10198:	86e6                	mv	x13,x25
+   1019a:	876a                	mv	x14,x26
+   1019c:	43c1                	li	x7,16
+   1019e:	2805                	jal	101ce <move>
+   101a0:	a019                	j	101a6 <allparticles>
+
+000101a2 <tailparticle>:
+   101a2:	4522                	lw	x10,8(x2)
+   101a4:	45b2                	lw	x11,12(x2)
+
+000101a6 <allparticles>:
+   101a6:	e219                	bnez	x12,101ac <init_done>
+   101a8:	4501                	li	x10,0
+   101aa:	4581                	li	x11,0
+
+000101ac <init_done>:
+   101ac:	c02a                	sw	x10,0(x2)
+   101ae:	c22e                	sw	x11,4(x2)
+   101b0:	7ff50513          	addi	x10,x10,2047
+   101b4:	7ff58593          	addi	x11,x11,2047 # 7e97ff <device+0x7d959d>
+   101b8:	20a1                	jal	10200 <paintpixel>
+   101ba:	0542                	slli	x10,x10,0x10
+   101bc:	05c2                	slli	x11,x11,0x10
+   101be:	81c1                	srli	x11,x11,0x10
+   101c0:	8d4d                	or	x10,x10,x11
+   101c2:	0121                	addi	x2,x2,8
+   101c4:	01111793          	slli	x15,x2,0x11
+   101c8:	f7c1                	bnez	x15,10150 <particleloop>
+   101ca:	0605                	addi	x12,x12,1
+   101cc:	bfa9                	j	10126 <animation_loop>
+
+000101ce <move>:
+   101ce:	8e89                	sub	x13,x13,x10
+   101d0:	8f0d                	sub	x14,x14,x11
+   101d2:	41f6d793          	srai	x15,x13,0x1f
+   101d6:	00f68433          	add	x8,x13,x15
+   101da:	8c3d                	xor	x8,x8,x15
+   101dc:	41f75793          	srai	x15,x14,0x1f
+   101e0:	00f704b3          	add	x9,x14,x15
+   101e4:	8cbd                	xor	x9,x9,x15
+   101e6:	94a2                	add	x9,x9,x8
+   101e8:	c899                	beqz	x9,101fe <move+0x30>
+   101ea:	027686b3          	mul	x13,x13,x7
+   101ee:	02770733          	mul	x14,x14,x7
+   101f2:	0296c433          	div	x8,x13,x9
+   101f6:	029744b3          	div	x9,x14,x9
+   101fa:	8d01                	sub	x10,x10,x8
+   101fc:	8d85                	sub	x11,x11,x9
+   101fe:	8082                	ret
+
+00010200 <paintpixel>:
+   10200:	6785                	lui	x15,0x1
+   10202:	17fd                	addi	x15,x15,-1
+   10204:	00f573b3          	and	x7,x10,x15
+   10208:	00f5f433          	and	x8,x11,x15
+   1020c:	0023d393          	srli	x7,x7,0x2
+   10210:	8009                	srli	x8,x8,0x2
+   10212:	038a                	slli	x7,x7,0x2
+   10214:	6789                	lui	x15,0x2
+   10216:	e0078793          	addi	x15,x15,-512 # 1e00 <DACC_R12DH+0x19e0>
+   1021a:	028787b3          	mul	x15,x15,x8
+   1021e:	93be                	add	x7,x7,x15
+   10220:	938e                	add	x7,x7,x3
+   10222:	67c1                	lui	x15,0x10
+   10224:	17fd                	addi	x15,x15,-1
+   10226:	00f3a023          	sw	x15,0(x7)
+   1022a:	8082                	ret
+
+0001022c <clrscr>:
+   1022c:	6705                	lui	x14,0x1
+   1022e:	02e65263          	bge	x12,x14,10252 <bye>
+   10232:	0079f7b7          	lui	x15,0x79f
+   10236:	af078793          	addi	x15,x15,-1296 # 79eaf0 <device+0x78e88e>
+   1023a:	17fd                	addi	x15,x15,-1
+   1023c:	fffd                	bnez	x15,1023a <clrscr+0xe>
+   1023e:	870e                	mv	x14,x3
+   10240:	007e97b7          	lui	x15,0x7e9
+   10244:	978e                	add	x15,x15,x3
+   10246:	00072023          	sw	x0,0(x14) # 1000 <DACC_R12DH+0xbe0>
+   1024a:	0711                	addi	x14,x14,4
+   1024c:	fef71de3          	bne	x14,x15,10246 <clrscr+0x1a>
+   10250:	8082                	ret
+
+00010252 <bye>:
+   10252:	4501                	li	x10,0
+   10254:	4581                	li	x11,0
+   10256:	4601                	li	x12,0
+   10258:	4681                	li	x13,0
+   1025a:	05d00893          	li	x17,93
+   1025e:	00000073          	ecall
+
+00010262 <device>:
+   10262:	7665642f          	0x7665642f
+   10266:	3062662f          	0x3062662f
+   1026a:	0000                	unimp
+   1026c:	00000013          	nop
+   10270:	00000013          	nop
+   10274:	00000013          	nop
+   10278:	00000013          	nop
+   1027c:	00000013          	nop
+   10280:	00000013          	nop
+   10284:	00000013          	nop
+   10288:	00000013          	nop
+   1028c:	00000013          	nop
+   10290:	00000013          	nop
+   10294:	00000013          	nop
+   10298:	00000013          	nop
+   1029c:	00000013          	nop
+   102a0:	00000013          	nop
+   102a4:	00000013          	nop
+   102a8:	00000013          	nop
+   102ac:	00000013          	nop
+   102b0:	00000013          	nop
+   102b4:	00000013          	nop
+   102b8:	00000013          	nop
+   102bc:	00000013          	nop
+   102c0:	00000013          	nop
+   102c4:	00000013          	nop
+   102c8:	00000013          	nop
+   102cc:	00000013          	nop
+   102d0:	00000013          	nop
+   102d4:	00000013          	nop
+   102d8:	00000013          	nop
+   102dc:	00000013          	nop
+   102e0:	00000013          	nop
+   102e4:	00000013          	nop
+   102e8:	00000013          	nop
+   102ec:	00000013          	nop
+   102f0:	00000013          	nop
+   102f4:	00000013          	nop
+   102f8:	00000013          	nop
+   102fc:	00000013          	nop
+
+Disassembly of section userdictionary:
+
+20000000 <userdictionary>:
+	...

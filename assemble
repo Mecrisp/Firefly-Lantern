@@ -1,0 +1,12 @@
+#!/bin/sh
+
+riscv64-linux-gnu-as firefly-lantern.s -o firefly-lantern.o -march=rv32im
+riscv64-linux-gnu-ld -o firefly-lantern.elf -T memmap firefly-lantern.o -m elf32lriscv
+riscv64-linux-gnu-objdump -Mnumeric -D firefly-lantern.elf > firefly-lantern.list
+riscv64-linux-gnu-objcopy firefly-lantern.elf firefly-lantern.bin -O binary
+
+rm -f firefly-lantern.o
+rm -f firefly-lantern.elf
+
+md5sum *.bin
+ls -l *.bin

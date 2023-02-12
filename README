@@ -1,0 +1,109 @@
+
+--------------------------------------------------------------------------------
+  Firefly Lantern
+  Lovebyte 2023
+  Mecrisp
+
+  Matthias Koch
+  m-atthias@users.sf.net
+  http://mecrisp.sourceforge.net/
+--------------------------------------------------------------------------------
+
+A firefly simulator running in 256 bytes on a RISC-V microcontroller,
+using two DAC channels for vector graphics on an analog oscilloscope.
+
+Firefly Lantern is designed for GD32VF103 microcontrollers and
+draws vector graphics on an analog oscilloscope in XY mode
+connected to
+
+   GND and the two DAC channels on pins
+   PA4 (vertical) and
+   PA5 (horizontal).
+
+--------------------------------------------------------------------------------
+  Design ideas:
+--------------------------------------------------------------------------------
+
+Firefly Lantern paints filament like firefly traces controlled by
+numerically integrating the differential equations of a chaotic oscillator
+on scaled fixpoint integers.
+
+The filament heads chase a destination, which is either a randomly choosen
+and periodically updated coordinate for the first head or the coordinate of
+the head of the previous filaments, and are also deflected by a function given
+by a chaotic oscillator with smooth movements.
+
+For every frame, the chaotic oscillator is updated from which both deflection
+and randomness are derived. In the first frame, all coordinates are initialised
+to zero, which is in the middle of the canvas.
+
+The chaotic oscillator itself runs on 3D coordinates, and enters - depending
+on start values - one of many possible closed cycles, so that the values are
+bounded within a resonable range and repeat itself when calculated on integers.
+
+The differential equations of the chaotic oscillator, "Sprott A", are given
+in literature as:
+
+  J. C. Sprott, Some simple chaotic flows, 1994
+
+  x-dot = y
+  y-dot = -x + yz
+  z-dot = 1 - y^2
+
+  (x0,y0,z0) = (0,5,0)
+
+These equations are numerically integrated using the Euler method, with a
+suitable set of start values for a nice transient response before entering
+a closed cycle.
+
+One can experiment with this interesting piece of math using the
+standalone snipplet of code as included in sprott.c
+
+--------------------------------------------------------------------------------
+  How to run:
+--------------------------------------------------------------------------------
+
+If you have connected your
+
+Longan Nano board to
+             a USB-serial cable with 3.3V logic levels
+
+3V3 or 5V -- VCC (measure the voltage present here)
+R0        -- TXD
+T0        -- RXD
+GND       -- GND
+
+you can flash it if you first
+
+* Press and hold BOOT0 button
+* Press and release Reset button
+* Release BOOT0 button
+
+and then execute
+
+stm32loader -e -w -v -p /dev/ttyUSB0 firefly-lantern.bin
+
+on your host machine.
+
+Press and release Reset button to start demo.
+
+
+PS: There is also a version for Linux with qemu-user-static
+    that uses a mmap'ed 1920x1080x32bpp framebuffer through syscalls
+    so that you can at least try the effects of Firefly Lantern
+    on your desktop machine.
+
+--------------------------------------------------------------------------------
+  Credits:
+--------------------------------------------------------------------------------
+
+* Filament creatures inspiration for Firefly Lantern:
+
+  Clash by Jin X, Lovebyte 2022
+  https://www.pouet.net/prod.php?which=90980
+
+* Chaotic oscillator differential equations:
+
+  "Sprott A"
+  J. C. Sprott, Some simple chaotic flows, 1994
+  https://sprott.physics.wisc.edu/pubs/paper212.pdf
